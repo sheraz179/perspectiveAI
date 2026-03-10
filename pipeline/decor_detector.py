@@ -42,6 +42,7 @@ class YOLOObjectoxDetector:
         target_ids = self._filter_class_ids(target_classes)
 
         filtered_boxes = []
+        filtered_labels=[]
 
         for bbox, score, cls in zip(boxes, scores, labels):
             if score < conf_threshold:
@@ -49,6 +50,6 @@ class YOLOObjectoxDetector:
 
             if int(cls) in target_ids:
                 filtered_boxes.append(list(map(int, bbox)))
+                filtered_labels.append(self.class_names[int(cls)])
 
-        return filtered_boxes
-
+        return filtered_boxes, filtered_labels

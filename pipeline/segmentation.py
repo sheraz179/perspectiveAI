@@ -10,7 +10,7 @@ class SAM2BoxSegmenter:
     from bounding boxes.
     """
 
-    def __init__(self, checkpoint_path, model_cfg="sam2_hiera_l.yaml", device=None):
+    def __init__(self, device=None):
         self.device = device if device else ("cuda" if torch.cuda.is_available() else "cpu")
 
         self.model = Sam2Model.from_pretrained("facebook/sam2-hiera-large").to(self.device)
