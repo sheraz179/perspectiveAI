@@ -5,9 +5,8 @@ from diffusers import StableDiffusionControlNetImg2ImgPipeline, ControlNetModel
 
 
 class GeometryAwareImg2ImgGenerator:
-    def __init__(self, device="cuda", image_size=(768, 768)):
+    def __init__(self, device="cuda"):
         self.device = device
-        self.image_size = image_size
 
         # ── ControlNet models ──────────────────────────────────────
         controlnet_depth = ControlNetModel.from_pretrained(
@@ -43,17 +42,19 @@ class GeometryAwareImg2ImgGenerator:
         strength: float = 0.35,
         guidance_scale: float = 7.5,
         resizing:bool=False,
+        image_size = (768, 768),
         steps: int = 30):
 
         target_size = original_image.size
         if resizing:
-            image = self.preprocess(original_image)
+            self.image_size = image_size
+            original_image = self.preprocess(original_image)
             depth_map, line_map = self.extract_controls(line_map, depth_map)
 
         output = self.pipe(
             prompt=prompt,
             negative_prompt=negative_prompt,
-            image=image,
+            image=original_image,
             control_image=[depth_map, line_map],
             controlnet_conditioning_scale=[0.8, 0.4],  # depth dominates
             strength=strength,
