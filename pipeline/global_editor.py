@@ -42,10 +42,13 @@ class GeometryAwareImg2ImgGenerator:
         negative_prompt: str = "blurry, distorted walls, wrong perspective, deformed",
         strength: float = 0.35,
         guidance_scale: float = 7.5,
+        resizing:bool=False,
         steps: int = 30):
 
-        image = self.preprocess(original_image)
-        depth_map, line_map = self.extract_controls(line_map, depth_map)
+        target_size = original_image.size
+        if resizing:
+            image = self.preprocess(original_image)
+            depth_map, line_map = self.extract_controls(line_map, depth_map)
 
         output = self.pipe(
             prompt=prompt,
@@ -58,4 +61,4 @@ class GeometryAwareImg2ImgGenerator:
             num_inference_steps=steps,
         )
 
-        return output.images[0]
+        return output.images[0].resize(target_size)

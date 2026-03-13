@@ -64,7 +64,7 @@ class StructuralLineDetector:
     def extract_lines(self, detected_map):
         return self.extract_lines_from_mlsd(detected_map)
 
-    def compute(self, image, lines_out_image_path):
+    def compute(self, image, lines_out_image_path=None):
         """
         image: numpy array (BGR OpenCV format)
         returns: structural line map (numpy array)
@@ -78,12 +78,14 @@ class StructuralLineDetector:
         w,h = image_rgb.shape[:2]
         detected_map = detected_map.resize((h, w))
         #print(detected_map.size, 'shape')
-        cv2.imwrite(lines_out_image_path, np.array(detected_map))
+        if lines_out_image_path is not None:
+            cv2.imwrite(lines_out_image_path, np.array(detected_map))
+    
         lines = self.extract_lines(detected_map)
         # Convert back to numpy array
         #detected_map = np.array(detected_map)
 
-        return lines #detected_map
+        return lines, detected_map
 
     def scaling_groups_to_original_shape(self, groups, original_shape):
 
