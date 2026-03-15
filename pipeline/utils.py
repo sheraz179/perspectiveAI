@@ -1,5 +1,6 @@
 import numpy as np
 from PIL import Image
+import torch
 
 def crop_and_resize(image, mask_np, margin=20, target_size=512):
     """
@@ -49,3 +50,41 @@ def get_cropped_mask_images(final_masks, image, margin=20):
         bboxes.append(bbox)
 
     return crop_images, crop_masks, bboxes
+
+def combine_masks(final_mask):
+
+    mask_tensor = final_mask[0]          # shape: (N, 1, H, W)
+    mask_tensor = mask_tensor.squeeze(1) # shape: (N, H, W)
+    combined_mask = torch.any(mask_tensor, dim=0)  # shape: (H, W)
+    mask_np = combined_mask.cpu().numpy().astype(np.uint8) * 255
+
+    return mask_np
+
+def syncing_prompts_with_detected_objects(detected_labels, objects_to_edit):
+
+    # Align prompts with detected instances sequentially
+    # Track how many times we've used a prompt for each label
+    prompt_counters = {}
+    final_prompts = []
+
+    for det_label in detected_labels:
+    # Find all matching prompts from state for this specific label
+        matching_objs = [o for o in objects_to_edit if o['label'] == det_label]
+        
+        if matching_objs:
+            # Get the current index for this label, defaulting to 0
+            idx = prompt_counters.get(det_label, 0)
+            
+            # If we have a specific prompt for this instance, use it
+            if idx < len(matching_objs):
+                final_prompts.append(matching_objs[idx]['edit_prompt'])
+            else:
+                # Fallback to the last available prompt if we have more objects than prompts
+                final_prompts.append(matching_objs[-1]['edit_prompt'])
+            
+            # Increment the counter for this label
+            prompt_counters[det_label] = idx + 1
+        else:
+            final_prompts.append("keep as is")
+
+    return final_prompts
