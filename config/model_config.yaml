@@ -12,6 +12,8 @@ models:
 
     depth:
         model_type: DPT_Hybrid #DPT_Large, MiDaS_small
+    edges:
+        model_id: lllyasviel/ControlNet
 
     diffusion:
         gloabl_editor:
@@ -25,7 +27,7 @@ models:
 
 
     quality:
-        clip_model: openai/clip-vit-base-patch32
+        clip_model_id: openai/clip-vit-base-patch32
         # Inpainting Score Weights Configuration
         inpaint_scoring_weights:
             semantic: 0.5
@@ -36,7 +38,3 @@ models:
             semantic: 0.5
             structure: 0.3
             depth: 0.2
-
-device:
-
-  gpu: cuda

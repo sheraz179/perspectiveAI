@@ -6,9 +6,9 @@ import cv2
 
 
 class YOLOObjectoxDetector:
-    def __init__(self, model_path, device=None):
+    def __init__(self, model_id, device=None):
         self.device = device if device else ("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = YOLO(model_path)
+        self.model = YOLO(model_id)
         self.model.to(self.device)
 
         self.class_names = self.model.names  # {id: name}

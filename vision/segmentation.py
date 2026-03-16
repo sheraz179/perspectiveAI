@@ -10,11 +10,11 @@ class SAM2BoxSegmenter:
     from bounding boxes.
     """
 
-    def __init__(self, model_path="facebook/sam2-hiera-large", device=None):
+    def __init__(self, model_id="facebook/sam2-hiera-large", device=None):
         self.device = device if device else ("cuda" if torch.cuda.is_available() else "cpu")
 
-        self.model = Sam2Model.from_pretrained(model_path).to(self.device)
-        self.processor = Sam2Processor.from_pretrained(model_path)
+        self.model = Sam2Model.from_pretrained(model_id).to(self.device)
+        self.processor = Sam2Processor.from_pretrained(model_id)
 
 
     def generate_mask_from_boxes(self, image_bgr, boxes):

@@ -5,8 +5,8 @@ from sklearn.cluster import KMeans
 from PIL import Image
 
 class StructuralLineDetector:
-    def __init__(self):
-        self.detector = MLSDdetector.from_pretrained("lllyasviel/ControlNet")
+    def __init__(self, model_id = 'lllyasviel/ControlNet'):
+        self.detector = MLSDdetector.from_pretrained(model_id)
 
     def group_orientations_kmeans(self, lines, n_clusters=3):
 

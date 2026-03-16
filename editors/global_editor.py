@@ -5,7 +5,7 @@ from diffusers import StableDiffusionControlNetImg2ImgPipeline, ControlNetModel
 
 
 class GeometryAwareImg2ImgGenerator:
-    def __init__(self, model_path, device="cuda"):
+    def __init__(self, model_id, device="cuda"):
         self.device = device
 
         # ── ControlNet models ──────────────────────────────────────
@@ -18,7 +18,7 @@ class GeometryAwareImg2ImgGenerator:
 
         # ── Diffusion pipeline ─────────────────────────────────────
         self.pipe = StableDiffusionControlNetImg2ImgPipeline.from_pretrained(
-            model_path,
+            model_id,
             controlnet=[controlnet_depth, controlnet_line],
             torch_dtype=torch.float16,
         ).to(device)
