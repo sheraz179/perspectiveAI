@@ -1,0 +1,13 @@
+pipeline:
+
+  retry_limit: 3
+  quality_threshold: 0.35
+  diffusion_steps: 30
+  guidance_scale: 7.5
+  seed: 42
+
+paths:
+
+  sessions: sessions/
+  outputs: sample_data/outputs/
+  logs: logs/

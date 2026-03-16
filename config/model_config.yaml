@@ -1,0 +1,42 @@
+models:
+
+    detector:
+        model_id: models/room_decor_object_detectpr.pt
+        conf_threshold: 0.25
+        detectable_objects: ["bed", "sofa", "chair", "table", "lamp", "tv",
+                          "laptop", "wardrobe", "window", "door", "potted plant",
+                          "photo frame"]
+
+    segmentation:
+        model_id: facebook/sam2-hiera-large
+
+    depth:
+        model_type: DPT_Hybrid #DPT_Large, MiDaS_small
+
+    diffusion:
+        gloabl_editor:
+            model_id: lllyasviel/control_v11p_sd15_depth
+            image_size: (1024, 1024)
+            controlnet_conditioning_scale: [0.8, 0.4] # depth, edges
+        
+        inpaint_model:
+            model_id: runwayml/stable-diffusion-inpainting
+            strength: 0.99
+
+
+    quality:
+        clip_model: openai/clip-vit-base-patch32
+        # Inpainting Score Weights Configuration
+        inpaint_scoring_weights:
+            semantic: 0.5
+            structure: 0.2
+            segmentation: 0.3
+        # Inpainting Score Weights Configuration
+        global_scoring_weights:
+            semantic: 0.5
+            structure: 0.3
+            depth: 0.2
+
+device:
+
+  gpu: cuda

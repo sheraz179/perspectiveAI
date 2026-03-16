@@ -1,0 +1,16 @@
+version: v1
+description: "Baseline American style"
+
+positive_prompt: >
+  A modern american living room, natural wood textures,
+  soft daylight, minimalistic furniture, realistic photography
+
+negative_prompt: >
+  distorted walls, warped ceiling, floating furniture,
+  unrealistic perspective, low resolution, artifacts
+
+conditioning:
+  guidance_scale: 7.5
+  strength: 0.7
+  controlnet_scale_depth: 0.8
+  controlnet_scale_edges: 0.6
