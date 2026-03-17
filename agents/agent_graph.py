@@ -36,7 +36,7 @@ def quality_checker_node(state:AgentState, model_registry):
             prompt
         )
 
-    state["quality_score"] = scores #float(scores['final'])
+    state["quality_score"] = float(scores['final'])
 
     return state
 
