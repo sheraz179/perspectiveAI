@@ -1,5 +1,16 @@
 from core.config_loader import ConfigLoader
 import torch
+from vision.segmentation import SAM2BoxSegmenter
+from vision.depth import MiDaSDepthEstimator
+from vision.edges import StructuralLineDetector
+from vision.decor_detector import YOLOObjectoxDetector
+
+from editors.room_decor_inpainter import DiffusionInpainter
+from editors.global_editor import GeometryAwareImg2ImgGenerator
+
+from agents.quality_checker import ImageQualityValidator
+
+from langchain_huggingface import HuggingFaceEndpoint, ChatHuggingFace
 
 class ModelRegistry:
     _instance = None
@@ -15,38 +26,31 @@ class ModelRegistry:
             return
 
         self.config = ConfigLoader("config/model_config.yaml").get('models')
-
-        from ultralytics import YOLO
-        from transformers import DPTForDepthEstimation, DPTFeatureExtractor, CLIPModel, CLIPProcessor
-        from diffusers import StableDiffusionControlNetPipeline, ControlNetModel
-        
-        from vision.segmentation import SAM2BoxSegmenter
-        from vision.depth import MiDaSDepthEstimator
-        from vision.edges import StructuralLineDetector
-
-        from editors.room_decor_inpainter import DiffusionInpainter
-        from editors.global_editor import GeometryAwareImg2ImgGenerator
-
-        from agents.quality_checker import ImageQualityValidator
-
         self.device = device
 
         # YOLO Detector
-        self.object_detector = YOLO(self.config['detector']['model_id'])
+        self.object_detector = YOLOObjectoxDetector(self.config['detector']['model_id'])
 
         # SAM Segmentation
         self.sam_segmenter = SAM2BoxSegmenter(model_id=self.config['segmentation']['model_id'], device=device)
 
-        self.inpainter = DiffusionInpainter(model_id=self.config['inpaint_model']['model_id'])
-        self.global_generator = GeometryAwareImg2ImgGenerator(self.config['global_editor']['model_id'])
+        self.inpainter = DiffusionInpainter(model_id=self.config['diffusion']['inpaint_model']['model_id'])
+        self.global_generator = GeometryAwareImg2ImgGenerator(self.config['diffusion']['global_editor']['model_id'])
 
         # Depth Estimation
         self.depth_estimator = MiDaSDepthEstimator(model_type=self.config['depth']['model_type'])
-        self.line_detector = StructuralLineDetector(self.config['edges']['model_id']))
+        self.line_detector = StructuralLineDetector(self.config['edges']['model_id'])
 
         # CLIP for quality check
         self.validator = ImageQualityValidator(clip_model_id=self.config['quality']['clip_model_id'])
 
+        llm_endpoint = HuggingFaceEndpoint(
+            repo_id=self.config['llm']['model_id'],
+            temperature=self.config['llm']['temperature'],
+            task="text-generation"
+        )
+
+        self.llm  = ChatHuggingFace(llm=llm_endpoint)
         self._initialized = True
 
     def get(self, name):

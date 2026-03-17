@@ -1,7 +1,7 @@
 pipeline:
 
     retry_limit: 3
-    quality_threshold: 0.35
+    quality_threshold: 0.30
     diffusion_steps: 30
     system_prompt_version: v1
 

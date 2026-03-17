@@ -1,7 +1,10 @@
 models:
 
+    llm:
+        model_id: meta-llama/Meta-Llama-3-8B-Instruct
+        temperature: 0.0
     detector:
-        model_id: models/room_decor_object_detectpr.pt
+        model_id: models/room_decor_object_detector.pt
         conf_threshold: 0.25
         detectable_objects: ["bed", "sofa", "chair", "table", "lamp", "tv",
                           "laptop", "wardrobe", "window", "door", "potted plant",
@@ -16,8 +19,8 @@ models:
         model_id: lllyasviel/ControlNet
 
     diffusion:
-        gloabl_editor:
-            model_id: lllyasviel/control_v11p_sd15_depth
+        global_editor:
+            model_id: runwayml/stable-diffusion-v1-5
             image_size: (1024, 1024)
             controlnet_conditioning_scale: [0.8, 0.4] # depth, edges
         
