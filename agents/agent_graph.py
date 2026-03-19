@@ -1,4 +1,4 @@
-import json
+import json, torch,  random
 
 from PIL import Image
 from core.prompt_loader import get_system_prompt
@@ -44,7 +44,9 @@ def planner_node(state, model_registry):
     history = "\n".join(state.get("conversation_history", []))
     original = state.get("original_image_path")
     current = state.get("current_image_path", original)
-    SYSTEM_PROMPT = get_system_prompt()    
+    SYSTEM_PROMPT = get_system_prompt()
+    state['seed'] = state.get('seed', 42)
+    torch.manual_seed(state['seed'])
 
     prompt = f"""
         {SYSTEM_PROMPT}
@@ -75,7 +77,7 @@ def planner_node(state, model_registry):
     state["intent"] = plan.get("intent", "global_edit").lower()
     state["global_prompt"] = plan.get("global_prompt", "")
     state["objects"] = plan.get("objects", [])
-    state["strength"] = max(plan.get("strength", 0.4), 0.4)
+    state["strength"] = max(plan.get("strength", 0.4), 0.7)
 
     state["reply"] = plan.get("reply", "Configuring the edit...")
 
@@ -87,8 +89,10 @@ def planner_node(state, model_registry):
 def update_history_node(state):
     if "conversation_history" not in state: state["conversation_history"] = []
     state["conversation_history"].append(state["prompt"])
-    if state.get('output_image_path'): state['current_image_path'] = state['output_image_path']
+    #if state.get('output_image_path'): state['current_image_path'] = state['output_image_path']
     state['retry_count'] = 0
+    state['seed']=42
+    state['message_index'] = state.get('message_index', 0) +1
 
     return state
 
@@ -98,7 +102,7 @@ def retry_logic_node(state: AgentState):
     """
     retry_count = state.get("retry_count", 0)
     state["retry_count"] = retry_count + 1
-    
+    state['seed'] = random.randint(1, 100)
     # Revert current_image_path to previous to ensure we don't build on a failed edit
     state['current_image_path'] = state.get('previous_image_path', state.get('original_image_path'))
     
@@ -150,11 +154,13 @@ def build_graph(model_registry):
     builder = StateGraph(AgentState)
 
     # 3. Add all necessary nodes
-    builder.add_node("planner", lambda state: planner_node(state, model_registry))
-    builder.add_node("local_editor", lambda state: local_editor_node(state, model_registry) )
-    builder.add_node("global_editor", lambda state: global_editor_node(state, model_registry))
-    builder.add_node("quality_checker", lambda state: quality_checker_node(state, model_registry))
+    from functools import partial
+    builder.add_node("planner", partial(planner_node, model_registry=model_registry))
+    builder.add_node("local_editor", partial(local_editor_node, model_registry=model_registry) )
+    builder.add_node("global_editor", partial(global_editor_node, model_registry=model_registry))
+    builder.add_node("quality_checker", partial(quality_checker_node, model_registry=model_registry))
     builder.add_node("update_history", update_history_node)
+    builder.add_node("retry_logic", retry_logic_node)
 
     # 4. Set the entry point
     builder.set_entry_point("planner")
@@ -177,10 +183,11 @@ def build_graph(model_registry):
         "quality_checker",
         quality_router,
         {
-            "planner": "planner",
+            "retry_logic": "retry_logic",
             "update_history": "update_history",
         }
     )
+    builder.add_edge("retry_logic", "planner")
     # 8. Set finish point
     builder.set_finish_point("update_history")
 

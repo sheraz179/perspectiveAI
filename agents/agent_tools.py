@@ -1,9 +1,10 @@
-from utils import syncing_prompts_with_detected_objects, combine_masks, get_cropped_mask_images, paste_back
+from utils import syncing_prompts_with_detected_objects, combine_masks, get_cropped_mask_images, paste_back, save_output
 from PIL import Image
 from agents.agent_types import AgentState
 import cv2
+from langchain_core.runnables import RunnableConfig
 
-def local_editor_node(state: AgentState, model_registry):
+def local_editor_node(state: AgentState, config: RunnableConfig, model_registry):
     """
     Use this when the user wants to change specific objects
     like sofa, table, chair, lamp, etc.
@@ -45,14 +46,22 @@ def local_editor_node(state: AgentState, model_registry):
         final_image = paste_back(final_image, result, bbox, img.size)
 
     # save output
-    result_path = "agent_output_local.png"
-    final_image.save(result_path)
+    session_id = config.get("configurable", {}).get("thread_id")
+    message_index = state.get('message_index', 0)
+    #result_path = "agent_output_local.png"
+    result_path = save_output(state['original_image_path'], session_id=session_id, image=final_image,
+                            message_index=message_index, prefix="local_edit")
+    #final_image.save(result_path)
+    save_output(state['original_image_path'], session_id=session_id, image=Image.fromarray(state['last_mask']),
+                            message_index=message_index, prefix="local_mask")
+
+
     state['current_image_path'] = result_path
     state['previous_image_path'] = image_path
 
     return state
 
-def global_editor_node(state: AgentState, model_registry):
+def global_editor_node(state: AgentState, config: RunnableConfig, model_registry):
     """
     Use this when the user wants to change the entire room style
     or overall look.
@@ -79,8 +88,19 @@ def global_editor_node(state: AgentState, model_registry):
         resizing=True, image_size = (1024, 1024)
     )
 
-    result_path = "agent_output_global.png"
-    result.save(result_path)
+    #result_path = "agent_output_global.png"
+    #result.save(result_path)
+
+    session_id = config.get("configurable", {}).get("thread_id")
+    #result_path = "agent_output_local.png"
+    message_index = state.get('message_index', 0)
+    result_path = save_output(state['original_image_path'], session_id=session_id, image=result,
+                            message_index=message_index, prefix="global_edit")
+    save_output(state['original_image_path'], session_id=session_id, image=line_map_img.convert('L'),
+                            message_index=message_index, prefix="global_edges")
+    save_output(state['original_image_path'], session_id=session_id, image=depth_map_img.convert('L'),
+                            message_index=message_index, prefix="global_depth")
+
     state['current_image_path'] = result_path
     state['previous_image_path'] = image_path
 

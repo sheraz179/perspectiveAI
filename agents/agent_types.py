@@ -21,3 +21,5 @@ class AgentState(TypedDict):
     objects: List[dict]
     reply: str
     retry_count:int
+    seed: int
+    message_index: int

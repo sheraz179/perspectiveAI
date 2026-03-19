@@ -131,7 +131,7 @@ class ImageQualityValidator:
         depth_generated,
         prompt
     ):
-        methods_weights = self.config.get('models')['quality']['global_editor']
+        methods_weights = self.config.get('models')['quality']['global_scoring_weights']
 
         semantic = self.semantic.score(edited, prompt)
         structure = self.structure.score(original, edited)

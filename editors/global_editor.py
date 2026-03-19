@@ -51,6 +51,7 @@ class GeometryAwareImg2ImgGenerator:
             original_image = self.preprocess(original_image)
             depth_map, line_map = self.extract_controls(line_map, depth_map)
 
+        
         output = self.pipe(
             prompt=prompt,
             negative_prompt=negative_prompt,
