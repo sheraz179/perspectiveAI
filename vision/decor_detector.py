@@ -4,6 +4,7 @@ from ultralytics import YOLO
 from PIL import Image
 import cv2
 
+from core.logger import logger
 
 class YOLOObjectoxDetector:
     def __init__(self, model_id, device=None):
@@ -33,7 +34,7 @@ class YOLOObjectoxDetector:
         returns: list of filtered bounding boxes [x1,y1,x2,y2]
         """
 
-        results = self.model(image)[0]
+        results = self.model(image, verbose=False)[0]
 
         boxes = results.boxes.xyxy.cpu().numpy()
         scores = results.boxes.conf.cpu().numpy()
@@ -52,4 +53,5 @@ class YOLOObjectoxDetector:
                 filtered_boxes.append(list(map(int, bbox)))
                 filtered_labels.append(self.class_names[int(cls)])
 
+        logger.info(f'Have detected labels {filtered_labels} with room decor detector')
         return filtered_boxes, filtered_labels

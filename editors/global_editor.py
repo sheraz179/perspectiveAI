@@ -3,6 +3,8 @@ import numpy as np
 from PIL import Image
 from diffusers import StableDiffusionControlNetImg2ImgPipeline, ControlNetModel
 
+from core.config_loader import ConfigLoader
+from core.logger import logger
 
 class GeometryAwareImg2ImgGenerator:
     def __init__(self, model_id, device="cuda"):
@@ -22,6 +24,8 @@ class GeometryAwareImg2ImgGenerator:
             controlnet=[controlnet_depth, controlnet_line],
             torch_dtype=torch.float16,
         ).to(device)
+        
+        self.controlnet_conditioning_scale = ConfigLoader("config/model_config.yaml").get('models')['diffusion']['global_editor']['controlnet_conditioning_scale']
         self.pipe.enable_xformers_memory_efficient_attention()
 
     def preprocess(self, image: Image.Image):
@@ -51,16 +55,18 @@ class GeometryAwareImg2ImgGenerator:
             original_image = self.preprocess(original_image)
             depth_map, line_map = self.extract_controls(line_map, depth_map)
 
-        
+         
         output = self.pipe(
             prompt=prompt,
             negative_prompt=negative_prompt,
             image=original_image,
             control_image=[depth_map, line_map],
-            controlnet_conditioning_scale=[0.8, 0.4],  # depth dominates
+            controlnet_conditioning_scale=self.controlnet_conditioning_scale,  # depth dominates
             strength=strength,
             guidance_scale=guidance_scale,
             num_inference_steps=steps,
         )
+        logger.info(f'Generated a new image with global editor with {prompt}, image size: {original_image.size} and strength {strength}')
+
 
         return output.images[0].resize(target_size)

@@ -1,19 +1,28 @@
-import os, logging
+import logging
+import os
+from core.config_loader import ConfigLoader
 
-def setup_logger(log_dir="logs"):
+LOG_DIR =  ConfigLoader("config/pipeline_config.yaml").get('paths')['logs']
+os.makedirs(LOG_DIR, exist_ok=True)
 
-    os.makedirs(log_dir, exist_ok=True)
+logger = logging.getLogger("genai_pipeline")
+logger.setLevel(logging.INFO)
 
-    logging.basicConfig(
-        filename=f"{log_dir}/pipeline.log",
-        level=logging.INFO,
-        format="%(asctime)s | %(levelname)s | %(message)s"
+# Prevent duplicate handlers
+if not logger.handlers:
+
+    file_handler = logging.FileHandler(f"{LOG_DIR}/pipeline.log")
+    file_handler.setLevel(logging.INFO)
+
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+
+    formatter = logging.Formatter(
+        "%(asctime)s | %(levelname)s | %(message)s"
     )
 
-    return logging.getLogger("pipeline")
+    file_handler.setFormatter(formatter)
+    console_handler.setFormatter(formatter)
 
-# logger = setup_logger()
-# logger.info("Starting generation")
-# logger.info(
-#     f"Prompt: {prompt} | Labels: {labels}"
-# )
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)

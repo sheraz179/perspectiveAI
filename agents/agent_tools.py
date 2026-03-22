@@ -4,12 +4,15 @@ from agents.agent_types import AgentState
 import cv2
 from langchain_core.runnables import RunnableConfig
 
+from core.logger import logger
+
 def local_editor_node(state: AgentState, config: RunnableConfig, model_registry):
     """
     Use this when the user wants to change specific objects
     like sofa, table, chair, lamp, etc.
     """
-
+    logger.info(f"Local editor node execution starting to process image: {state['image_path']} with user prompt {state['prompt']} "
+                f"and planner generated detailed prompt:{state['objects']}")
     image_path = state['image_path']
     objects_to_edit = state['objects'] # List of {'label': ..., 'edit_prompt': ...}
     target_labels = list(set([obj['label'] for obj in objects_to_edit]))
@@ -20,13 +23,15 @@ def local_editor_node(state: AgentState, config: RunnableConfig, model_registry)
     
     if not bboxes:
         print("No matching objects detected.")
+        state['current_image_path'] = image_path
+        state['previous_image_path'] = image_path
         return state
 
     # 2. Align prompts with detected instances sequentially
     # Track how many times we've used a prompt for each label
     final_prompts = syncing_prompts_with_detected_objects(detected_labels, objects_to_edit)
     
-    print('final prompts assigned:', final_prompts)
+    #print('final prompts assigned:', final_prompts)
 
     # 3. Generate masks for all detected boxes
     final_masks = model_registry.sam_segmenter.generate_mask_from_boxes(img, bboxes)
@@ -66,6 +71,10 @@ def global_editor_node(state: AgentState, config: RunnableConfig, model_registry
     Use this when the user wants to change the entire room style
     or overall look.
     """
+
+    logger.info(f'Global editor node execution starting to process image: {state['image_path']} with user prompt {state['prompt']}  \
+                and planner generated detailed prompt:{state['global_prompt']}')
+    
     image_path = state['image_path']
     img = cv2.imread(image_path)
     
@@ -78,7 +87,7 @@ def global_editor_node(state: AgentState, config: RunnableConfig, model_registry
 
     # Use dynamic strength from state, default to 0.35 if not set
     strength_val = state.get('strength', 0.35)
-    print('prompt and strength', state['global_prompt'], strength_val)
+    #print('prompt and strength', state['global_prompt'], strength_val)
     result = model_registry.global_generator.generate(
         prompt=state['global_prompt'],
         original_image=Image.open(image_path),

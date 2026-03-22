@@ -3,6 +3,7 @@ import numpy as np
 from PIL import Image
 from diffusers import StableDiffusionInpaintPipeline
 
+from core.logger import logger
 
 class DiffusionInpainter:
 
@@ -91,5 +92,6 @@ class DiffusionInpainter:
             num_inference_steps=steps,
             guidance_scale=guidance
         ).images
+        logger.info(f'Generated a new image with local editor with strength {strength} and prompts {prompts}')
 
         return results
