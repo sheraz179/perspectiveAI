@@ -105,7 +105,7 @@ def planner_node(state:AgentState, config: RunnableConfig, model_registry):
                         f"for {thread_id} and user prompt {state['prompt']}, so switching to global edit with {plan}")
     state["global_prompt"] = plan.get("global_prompt", "")
     state["objects"] = plan.get("objects", [])
-    state["strength"] = max(plan.get("strength", 0.4), 0.7)
+    state["strength"] = plan.get("strength", 0.4)
 
     state["reply"] = plan.get("reply", "Configuring the edit...")
 

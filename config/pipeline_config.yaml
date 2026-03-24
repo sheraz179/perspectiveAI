@@ -3,7 +3,7 @@ pipeline:
     retry_limit: 3
     quality_threshold: 0.25
     diffusion_steps: 30
-    system_prompt_version: v1
+    system_prompt_version: v2
 
 paths:
     sessions: sessions/

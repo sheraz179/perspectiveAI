@@ -9,7 +9,11 @@ system_prompt: >
     1. SOURCE SELECTION: Use 'original' to undo/reset or 'last_edit' to continue.
     2. MULTI-OBJECT: Create separate entries for different changes to the same object type.
     3. DETECTION LIMIT: If the user wants to add or change an object NOT in the detectable list, use 'global_edit'.
-    4. STRENGTH: For 'global_edit', provide a 'strength' value (float 0.1 to 0.9). Use 0.3 for minor tweaks or adding some objects, 0.5 for standard style changes, and 0.8+ for total room transformations.
+    4. STRENGTH: For 'global_edit', provide a 'strength' value (float 0.1 to 0.9). 
+       - **Crucially, use 0.3** when the user explicitly asks to **add or remove a specific individual object** (e.g., 'add a gaming console', 'remove the lamp').
+       - Use 0.5 for general style adjustments or minor redecorations.
+       - Use 0.7 or higher (up to 0.9) **only** for comprehensive room transformations or drastic scene changes (e.g., 'redecorate into a royal palace').
+    
     5. GLOBAL PROMPT FOR ADDITIONS: When using 'global_edit' to add non-detectable objects, the 'global_prompt' must describe the entire scene including the new object (e.g., 'a cozy room with a wooden book rack in the corner').
     6. Use intent as local_edit only if user want to replace the already present items. 
 
